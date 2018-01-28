@@ -12,11 +12,13 @@ from collections import namedtuple
 from flask import Flask, flash, render_template, request, redirect, session, url_for
 from flask_bootstrap import Bootstrap
 from flask_datepicker import datepicker
+from flask.ext.misaka import Misaka
 from functools import partial
 
 app = Flask(__name__)
 Bootstrap(app)
 datepicker(app)
+Misaka(app)
 
 inifile = configparser.ConfigParser()
 inifile.read("./config.ini")
@@ -33,7 +35,7 @@ RPA = {
     {
         "timeStamp": timestamp_nem,
         "amount": 1000000, # 1000000 = one time.
-        "fee": 500000,   # 0.2 xems
+        "fee": 300000,   # 0.2 xems
         "recipient": inifile.get("company_info", "address"),
         "type": 257,
         "deadline": timestamp_nem_deadline,
@@ -60,19 +62,19 @@ RPA = {
 SN = 'http://127.0.0.1:7890'
 #SN = 'http://104.128.226.60:7890'
 
-# Retrieve transactions which include designated Namespace:mosaic.
-def check_mosaic(t, ns, ms):
-    try:
-        mosaics = t["transaction"]["mosaics"]
-        for i in mosaics:
-            if i['mosaicId']['namespaceId'] == ns and i['mosaicId']['name'] == ms:
-                return True
-            else:
-                continue
-        
-        return False
+def get_transactions(req):
+    transactions = requests.get(req).content
+    transactions = json.loads(transactions)
+    transactions = transactions["data"]
 
-    except:
+    return transactions
+
+# Retrieve transactions which include designated Namespace:mosaic.
+def check_mosaic(t):
+    t = t["transaction"]
+    if "mosaics" in t:
+        return True
+    else:
         return False
 
 # return mosaic data table from mosaic transactions
@@ -135,6 +137,7 @@ def apply_holiday():
     remained_holidays = str(remained_holidays)
     
     if request.method == 'POST':
+        # Update Message
         date = request.form['datepicker']
 
         if date == "":
@@ -151,6 +154,17 @@ def apply_holiday():
             return render_template('index.html', holidays =remained_holidays)
 
         RPA["transaction"]["message"]["payload"] = date_hex
+
+        # Update Time
+        timestamp_nem = datetime.datetime.now() - datetime.datetime(2015, 3, 29, 0, 6, 25)
+        timestamp_nem = timestamp_nem.total_seconds()
+        timestamp_nem = int(timestamp_nem)
+        timestamp_nem_deadline = timestamp_nem + 3600
+        
+        RPA["transaction"]["timeStamp"] = timestamp_nem
+        RPA["transaction"]["deadline"] = timestamp_nem_deadline
+        
+        # Create Transaction request
         req = SN + '/transaction/prepare-announce'
         responce = requests.post(req, json = RPA)
 
@@ -164,7 +178,7 @@ def apply_holiday():
         return render_template('index.html', holidays = remained_holidays) 
 
 @app.route('/dashboard', methods = ['GET','POST'])
-def get_transaciton():
+def dashboard():
     # Determine which namespace
     feature_namespace = request.args.get("namespace")
     if feature_namespace == None:
@@ -172,44 +186,48 @@ def get_transaciton():
     # Determine which mosaic
     feature_mosaic = request.args.get("mosaic")
     if feature_mosaic == None:
-        feature_mosaic = "holiday2018"
+        feature_mosaic = "test"
 
     feature_space_mosaic = feature_namespace + "-" + feature_mosaic
     # Determine which address(company)
     company = request.args.get("address")
     if company == None:
         company = 'TCJ2QE7WZQLYWAF5EKEY2H3T57A2NP54W7HBSN5L'
-
+    
+    # Generate income mosaic pandas table from transactions.
     req = SN + '/account/transfers/incoming?address=' + company # + '&pageSize=100'
     
-    def load_mosaic_incomes():
-        transactions = requests.get(req).content
-        transactions = json.loads(transactions)
-        transactions = transactions["data"]
-        transactions_holiday = filter(partial(check_mosaic, ns = feature_namespace, ms = feature_mosaic), transactions)
-        transactions_holiday = list(transactions_holiday)
-
-        df = generate_table(transactions_holiday)
-
-        return df
+    incomes = get_transactions(req)
+    incomes_len = len(incomes)
     
-    df = load_mosaic_incomes()
+    mosaic_incomes = filter(check_mosaic, incomes)
+    mosaic_incomes = list(mosaic_incomes)
+
+    df = generate_table(mosaic_incomes)
+    
     # Retrieve income mosaic transactions.
     begin = datetime.datetime(2018, 1, 10, 0, 0, 0) - datetime.datetime(2015, 3, 29, 0, 6, 25)
     begin = begin.total_seconds()
     begin = int(begin)
-   
+    
     while True:
-        if min(df["time"]) > begin:
+        if incomes_len == 25:
             try:
-                req = req + "&id=" + str(min(df["id"]))
-                additional_df = load_mosaic_incomes()
-                df = df.append(additional_df, ignore_index = True)
+                oldest_transaction_time = mosaic_incomes[-1]["transaction"]["timeStamp"]
+                oldest_transaction_id = mosaic_incomes[-1]["meta"]["id"]
+                if oldest_transaction_time > begin:
+                    req = req + "&id=" + str(oldest_transaction_id)
+                    # Duplicated with former: Need to review
+                    incomes = get_transactions(req)
+                    incomes_len = len(incomes)
+                    mosaic_incomes = filter(check_mosaic, incomes)
+                    mosaic_incomes = list(mosaic_incomes)
+                    additional_df = generate_table(mosaic_incomes)
+                    df = df.append(additional_df, ignore_index = True)
             except:
                 break
         else:
             break
-    
     df["space_mosaic"] = df["namespace"] + "-" + df["mosaic"]
     
     # Get Mosaic Definitions
