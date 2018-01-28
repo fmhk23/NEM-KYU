@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block content %}
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.13.min.js"></script>
+<script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.13.min.js"></script>
+<center>
+<h2> {{ selected_namespace }}:Paid Holiday Acquisition Dashboard </h2>
+<p>Selected Company address is:<strong> {{ address }} </strong> </p>
+<form action = "/dashboard", method = "get">
+<input type ="text" name = "address" value = "{{address}}" size = 64>
+<input type ="text" name = "namespace" value = "{{selected_namespace}}">
+
+<select name = "mosaic">
+    {% for i in mosaics %}
+        {% if i == selected_mosaic%}
+            <option selected value = "{{i}}">{{i}}</option>
+        {% else %}
+            <option values = "{{i}}">{{i}}</option>
+        {% endif %}
+    {% endfor %}
+</select>
+<input type = "submit">
+</form>
+
+<h3> Mosaic Information </h3>
+{{ df|safe }}
+
+<h3>Offered {{mosaic}} Ratio</h3>
+{{ t|safe }}
+{{ r|safe }}
+
+</center>
+{% endblock %}

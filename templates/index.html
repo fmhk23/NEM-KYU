@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+{% block content %} 
+
+{% with status = get_flashed_messages(category_filter=["status"]) %}
+    {% if status %}
+        <h3> {{ status }} </h3>
+    {% else %}
+        <h3> Select the date to apply your holiday. </h3>
+    {% endif %}
+{% endwith %}
+	
+
+<div class="row">
+	<div class="col-md-6">
+		<div class="panel panel-info">
+			<div class="panel-heading">
+				<h3 class="panel-title">
+					Hi, Alice 
+				</h3>
+			</div>
+			<div class="panel-body">
+				<p> You have: </p>
+                <p> {{ holidays }} holidays. </p>
+                <p> {{ xem }} XEMs for transaction fee. （修正中） </p>
+			</div>
+			<div class="panel-footer">
+		        TBEAH4-ZO5H5E-T6EE4R-SLEVMG-2SUWPA-AYI6JC-E3E6
+			</div>
+		</div>
+	</div>
+	<div class="col-md-6">
+        <h3> Take A Holiday </h3>
+        <form action = "/apply_holiday" method = "post">
+            <input type="text" id="datepicker" name="datepicker">
+            <button type="submit" class="btn btn-default">Apply Holiday!</button>
+        </form>
+        <p>以下については修正予定</p>
+        <p>- 同じ日に有給申請できる</p>
+        <p>- 申請後に出るメッセージがわかりにくい</p>
+        <p>- ダッシュボードがうまく表示されない組み合わせがある</p>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-12">
+<iframe src="https://calendar.google.com/calendar/b/2/embed?showTitle=0&amp;showPrint=0&amp;height=800&amp;wkst=1&amp;hl=en&amp;bgcolor=%23FFFFFF&amp;src=o12m0o7hartrt7g770uj8trhjg%40group.calendar.google.com&amp;color=%2323164E&amp;ctz=Europe%2FLondon" style="border-width:0" width="1200" height="800" frameborder="0" scrolling="no"></iframe>
+	</div>
+{% endblock %}
