@@ -1,9 +1,10 @@
 # NEM-KYU
----
-NEM based simple attendance management system  
+
+*NEM based simple attendance management system*  
 Instead of installing it by yourself, during hackathon  you can try NEM-KYU here:  
 [http://52.14.91.53:5000/](http://52.14.91.53:5000)  
 
+In this page you can read the detailed description of NEM-KYU.
 I recommend you check my app by accessing here since you need many settings to install &run NEM-KYU correctly.
 
 ## How to install
