@@ -6,6 +6,7 @@ Instead of installing it by yourself, during hackathon  you can try NEM-KYU here
 
 I recommend you check my app by accessing here since you need many settings to install &run NEM-KYU correctly.
 
+## How to install
 
 ## Requirements
 All developments & tests are done in Ubuntu 16.04.
@@ -44,15 +45,17 @@ From company address, create name space and issue holiday mosaics.
 Send them to emploee address.  
 
 Set config files properly.  
-Now you can simulate taking holiday via NEM-KYU.  
+Now you can establish simple holiday management system using NEM-KYU.  
 
 ## Config settings
 
 ### client_secret.json
-API Key to use google calendar  
+API Key to use google calendar. See detail [here](https://developers.google.com/google-apps/calendar/overview)  
+You need read & write SCOPE.
 
 ### config.ini
 [employee_info]  
+address:NEM Address of employee
 signer:signer of employee  
 privatekey:private key of employee  
 
@@ -61,18 +64,21 @@ address: NEM Address of company
 
 [mosaic]  
 namespace:namespace which issued holiday mosaic.  
-mosaic:holiday mosaic, this mosaic is sent to company adress by nem-kyu.  
+mosaic:holiday mosaic, this mosaic is sent to company adress by NEM-KYU.  
 
 [app]  
 secret: secret key for Flask.  
 
 ### trigger.js
-Since company address is coded in the script directly, update it.  
+Update company address in line 11.
+Update the namespace and mosaic name in line 34.
 
-### update_calendar.js
+### update_calendar.py
 Update calendarId in line 71.
 
-## Issue
+## Issues
+If you have any issue or question, please make a new issue.  
+Simple ones can be accepted via twitter: [@heiuchi23](https://twitter.com/heiuchi23).  
 
 ## License
-MIT
+This software is released under the MIT License.
