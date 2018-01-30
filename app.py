@@ -60,7 +60,11 @@ RPA = {
 }
 
 SN = 'http://127.0.0.1:7890'
-#SN = 'http://104.128.226.60:7890'
+
+# Read description markdown
+content = ""
+with open("./doc/description.md", "r") as f:
+  content = f.read()
 
 def get_transactions(req):
     transactions = requests.get(req).content
@@ -117,25 +121,25 @@ def get_mosaic_definition(x):
 
     return df
 
-def summarise_mosaic(x):
-    print(x)
-    return x
-
 # Flask Apps
 @app.route('/')
 def description():
-    return render_template("description.html")
+    return render_template("description.html", text = content)
 
 @app.route('/apply_holiday', methods = ['GET', 'POST'])
 def apply_holiday():
-    addr = 'TBEAH4ZO5H5ET6EE4RSLEVMG2SUWPAAYI6JCE3E6' #Alice
+    addr = inifile.get("employee_info", "address")
     req = SN + '/account/mosaic/owned?address=' + addr
     balance =requests.get(req).content
     balance = json.loads(balance) #json-> dict
     balance = balance['data']
-    remained_holidays = [i['quantity'] for i in balance if i['mosaicId']['namespaceId'] == 'company_a' and i['mosaicId']['name'] == 'test'][0]
+    remained_holidays = [i['quantity'] for i in balance if i['mosaicId']['namespaceId'] == 'company_a' and i['mosaicId']['name'] == 'holiday2018'][0]
     remained_holidays = str(remained_holidays)
     
+    remained_xem = [i['quantity'] for i in balance if i['mosaicId']['namespaceId'] == 'nem' and i['mosaicId']['name'] == 'xem'][0]
+    remained_xem = remained_xem * 0.000001
+    remained_xem = "{0:.3f}".format(remained_xem)
+
     if request.method == 'POST':
         # Update Message
         date = request.form['datepicker']
@@ -175,7 +179,7 @@ def apply_holiday():
 
         return redirect(url_for('apply_holiday'))
     else:
-        return render_template('index.html', holidays = remained_holidays) 
+        return render_template('index.html', holidays = remained_holidays, xem = remained_xem) 
 
 @app.route('/dashboard', methods = ['GET','POST'])
 def dashboard():
@@ -186,7 +190,7 @@ def dashboard():
     # Determine which mosaic
     feature_mosaic = request.args.get("mosaic")
     if feature_mosaic == None:
-        feature_mosaic = "test"
+        feature_mosaic = "holiday2018"
 
     feature_space_mosaic = feature_namespace + "-" + feature_mosaic
     # Determine which address(company)
@@ -250,14 +254,14 @@ def dashboard():
     
     # Generate plot.
     p = figure(
-        title="Offered paid holiday ratio", 
+        title="Requested paid holiday ratio", 
         x_axis_label='x', 
         y_axis_label='y',
         y_axis_type="linear"
     )
     
     Data = namedtuple('Data', ('name', 'value', 'color'))
-    rates = [Data("Offered", offered_percent , "#7FC97F"), Data("Not Offered", 1 - offered_percent, "#DD1C77")]
+    rates = [Data("Requested", offered_percent , "#7FC97F"), Data("Not Requested", 1 - offered_percent, "#DD1C77")]
     
     start_angle = 0
 

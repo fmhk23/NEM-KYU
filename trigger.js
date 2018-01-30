@@ -31,7 +31,7 @@ function connect(connector){
           var name = res.transaction.mosaics[i].mosaicId.name;
           var message = nem.utils.format.hexToUtf8(res.transaction.message.payload);
 
-          if ( namespace === 'company_a' & name === 'test'){
+          if ( namespace === 'company_a' & name === 'holiday2018'){
             command = 'python update_calendar.py ' + message;
             console.log(command);
             const exec = require('child_process').exec;
