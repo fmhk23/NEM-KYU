@@ -43,7 +43,7 @@ If you try sample using google calendar, below are also required:
 ## Prepare NEM Address
 Create at least 2 addresses.One is company and the other is employee.  
 From company address, create name space and issue holiday mosaics.  
-Send them to emploee address.  
+Send them to employee address.  
 
 Set config files properly.  
 Now you can establish simple holiday management system using NEM-KYU.  
@@ -78,8 +78,7 @@ Update the namespace and mosaic name in line 34.
 Update calendarId in line 71.
 
 ## Issues
-If you have any issue or question, please make a new issue.  
-Simple ones can be accepted via twitter: [@heiuchi23](https://twitter.com/heiuchi23).  
+If you have any issue or question, please make a new issue.   
 
 ## License
 This software is released under the MIT License.
